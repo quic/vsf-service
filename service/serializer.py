@@ -1,0 +1,97 @@
+"""
+Copyright (c) 2021, Qualcomm Innovation Center, Inc. All rights reserved.
+
+SPDX-License-Identifier: BSD-3-Clause
+"""
+import json
+import logging
+from json.decoder import JSONDecodeError
+
+from django.core.files.uploadedfile import TemporaryUploadedFile
+from django.db import models
+from django.db.models import fields
+from rest_framework import serializers
+
+from service.models import (
+    CVE,
+    File,
+    Job,
+    LocalFile,
+    RemoteFile,
+    Snippet,
+)
+
+log = logging.getLogger(__name__)
+
+
+class JobSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(write_only=True)
+    status = serializers.ReadOnlyField(source="get_status_display")
+
+    def create(self, validated_data):
+        _ = validated_data.pop("file")
+
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop("files")
+
+        return representation
+
+    def validate_file(self, value: TemporaryUploadedFile):
+        log.info(f"Validating {value}")
+
+        self.records = None
+        try:
+            self.records = json.load(value)
+            if not isinstance(self.records, list):
+                self.records = [self.records]
+        except JSONDecodeError as e:
+            log.warning(
+                "Invalid json file format. Transform if the file is a list of json data."
+            )
+
+            try:
+                value.seek(0)
+                self.records = [
+                    json.loads(record) for record in value.readlines()
+                ]
+            except JSONDecodeError as e:
+                log.error(
+                    "Trasform process failed. The file is not a list of json data."
+                )
+                raise serializers.ValidationError(
+                    f"{value} is not valid fossid output file."
+                )
+            except Exception:
+                log.error(
+                    f"Unhandled exception while validating {value}",
+                    exc_info=True,
+                )
+                raise serializers.ValidationError(
+                    f"Unhandled exception while validating {value}"
+                )
+            else:
+                log.info(f"Successfully transformed data from {value}")
+        except Exception:
+            log.error(
+                f"Unhandled exception while validating {value}", exc_info=True
+            )
+            raise serializers.ValidationError(
+                "Unhandled exception while validating {value}"
+            )
+
+        return value
+
+    class Meta:
+        model = Job
+        fields = "__all__"
+        read_only_fields = (
+            "created_at",
+            "started_at",
+            "ended_at",
+            "status",
+            "message",
+            "files",
+        )

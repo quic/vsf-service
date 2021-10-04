@@ -4,8 +4,6 @@ SPDX-License-Identifier: BSD-3-Clause
 # VSF Service
 A reference model to show case parsing, storing and reporting of CVE data from fossid scan run against software builds.
 
-
-
 ## Requirements
 * Python 3.9+
 * `pip`, `setuptools`

@@ -1,0 +1,70 @@
+version: '3.8'
+
+x-base: &base
+  build:
+    context: .
+    dockerfile: Dockerfile
+  volumes:
+    - .:/app
+  depends_on:
+    - db
+  environment:
+    # database
+    DB_NAME: vsf_service
+    DB_USER: postgres
+    DB_PASS: qosp@vsf
+    DB_HOST: db
+    DB_PORT: 5432
+    # celery
+    CELERY_BROKER_URL: &broker_url amqp://admin:mypass@rabbit:5672//
+    CELERY_RESULT_BACKEND: redis://redis:6379/0
+services:
+  db:
+    image: postgres:12
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: vsf_service
+      POSTGRES_PASSWORD: qosp@vsf
+    logging:
+      driver: none
+
+  pgadmin:
+    image: dpage/pgadmin4:5.7
+    depends_on:
+      - db
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    logging:
+      driver: none
+
+  rabbit:
+    image: rabbitmq:3.8-management
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: mypass
+    logging:
+      driver: none
+    ports:
+      - '5672'
+      - '15672:15672'
+
+  redis:
+    image: redis:6.0
+    logging:
+      driver: none
+
+  app:
+    <<: *base
+    command: wait-for-it.sh redis:6379 -- wait-for-it.sh db:5432 -- wait-for-it.sh rabbit:5672 -- ./run_app.sh true
+    ports:
+      - '8000:8000'
+
+  worker:
+    <<: *base
+    command: wait-for-it.sh app:8000 -- ./run_worker.sh
+    ports:
+      - '9001:5555'      
