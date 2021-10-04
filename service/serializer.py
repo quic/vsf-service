@@ -11,6 +11,7 @@ from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 from service.models import (
     CVE,
@@ -83,6 +84,26 @@ class JobSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+    def validate(self, data):
+        if job := Job.objects.filter(
+            build=data.get("build"),
+            status__in=[
+                Job.Status.CREATED,
+                Job.Status.STARTED,
+                Job.Status.COMPLETED,
+            ],
+        ).first():
+            raise serializers.ValidationError(
+                {
+                    "error_message": _(
+                        f"Job {job.id} has already been registered with build="
+                        f"{job.build} with current status={job.get_status_display()}"
+                    )
+                }
+            )
+
+        return data
 
     class Meta:
         model = Job

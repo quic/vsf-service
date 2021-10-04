@@ -5,6 +5,7 @@ SPDX-License-Identifier: BSD-3-Clause
 """
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
@@ -71,7 +72,6 @@ class Job(models.Model):
         FAILED = 3, _("Failed")
 
     build = models.CharField(max_length=100)
-    label = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(blank=True, null=True)
     ended_at = models.DateTimeField(blank=True, null=True)
@@ -80,6 +80,9 @@ class Job(models.Model):
     )
     message = models.TextField(blank=True, null=True)
     files = models.ManyToManyField(File)
+
+    def get_absolute_url(self):
+        return reverse("job-detail", kwargs={"pk": self.pk})
 
     class Meta:
         db_table = "jobs"

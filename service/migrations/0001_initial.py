@@ -135,10 +135,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("build", models.CharField(max_length=100)),
-                (
-                    "label",
-                    models.CharField(blank=True, max_length=50, null=True),
-                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("started_at", models.DateTimeField(blank=True, null=True)),
                 ("ended_at", models.DateTimeField(blank=True, null=True)),
