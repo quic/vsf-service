@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = []  # type: ignore
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
@@ -151,7 +151,12 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("message", models.TextField(blank=True, null=True)),
-                ("files", models.ManyToManyField(to="service.File")),
+                (
+                    "files",
+                    models.ManyToManyField(
+                        related_name="jobs", to="service.File"
+                    ),
+                ),
             ],
             options={
                 "db_table": "jobs",

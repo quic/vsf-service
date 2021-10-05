@@ -3,6 +3,7 @@ Copyright (c) 2021, Qualcomm Innovation Center, Inc. All rights reserved.
 
 SPDX-License-Identifier: BSD-3-Clause
 """
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -41,7 +42,7 @@ class CVE(models.Model):
     modified_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.cve}, ..., {self.published_at}, {self.modified_at})"  # noqa
+        return f"{self.__class__.__name__}({self.cve}, ..., {self.published_at}, {self.modified_at})"
 
     class Meta:
         db_table = "cves"
@@ -78,7 +79,7 @@ class Job(models.Model):
         choices=Status.choices, default=Status.CREATED
     )
     message = models.TextField(blank=True, null=True)
-    files = models.ManyToManyField(File)
+    files = models.ManyToManyField(File, related_name="jobs")
 
     def get_absolute_url(self):
         return reverse("job-detail", kwargs={"pk": self.pk})
