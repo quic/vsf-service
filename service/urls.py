@@ -8,6 +8,6 @@ from service import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r"job", views.JobViewSet)
+router.register(r"jobs", views.JobViewSet)
 
 urlpatterns = router.urls

@@ -9,6 +9,8 @@ x-base: &base
   depends_on:
     - db
   environment:
+    # application
+    ALLOWED_HOSTS: '127.0.0.1,app,localhost'
     # database
     DB_NAME: vsf_service
     DB_USER: postgres

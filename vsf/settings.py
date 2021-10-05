@@ -30,7 +30,7 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(",")
 
 # LOG Configuration
 
@@ -39,11 +39,11 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "default": {
-            "format": "[%(asctime)s][%(levelname)s][%(name)s.%(module)s.%(funcName)s] %(message)s"
+            "format": "[%(asctime)s][%(levelname)s][%(name)s.%(module)s.%(funcName)s] %(message)s"  # noqa
         },
         "default_task": {
             "()": "celery.app.log.TaskFormatter",
-            "format": "[%(asctime)s][%(levelname)s][%(task_id)s][%(task_name)s][%(name)s.%(module)s.%(funcName)s] %(message)s",
+            "format": "[%(asctime)s][%(levelname)s][%(task_id)s][%(task_name)s][%(name)s.%(module)s.%(funcName)s] %(message)s",  # noqa
         },
     },
     "handlers": {
@@ -139,7 +139,9 @@ WSGI_APPLICATION = "vsf.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": os.getenv(
+            "DB_ENGINE", "django.db.backends.postgresql_psycopg2"
+        ),
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASS"),

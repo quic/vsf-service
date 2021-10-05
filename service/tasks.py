@@ -6,6 +6,7 @@ SPDX-License-Identifier: BSD-3-Clause
 import hashlib
 import json
 import logging
+from typing import Any, Dict, List, Tuple
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -28,7 +29,9 @@ def _job_start(build: str) -> None:
     log.info(f"Job started at {job.started_at}")
 
 
-def _job_complete(build: str, status: Job.Status, message: str = None) -> None:
+def _job_complete(
+    build: str, status: Tuple[int, Any], message: str = None
+) -> None:
     log = BuildLogAdapter(logger, {"build": build})
 
     job: Job = Job.objects.get(build=build)
@@ -38,13 +41,12 @@ def _job_complete(build: str, status: Job.Status, message: str = None) -> None:
     job.save()
 
     log.info(
-        f"Job completed at {job.ended_at} with status={job.get_status_display()}"
+        f"Job completed at {job.ended_at} with "
+        f"status={job.get_status_display()}"
     )
 
 
 def _job_create_update_cve(build: str, cve: CVERecord) -> CVE:
-    log = BuildLogAdapter(logger, {"build": build})
-
     instance: CVE
     try:
         instance = CVE.objects.get(cve=cve.id)
@@ -73,7 +75,9 @@ def _job_create_update_cve(build: str, cve: CVERecord) -> CVE:
         instance = CVE.objects.create(
             cve=cve.id,
             details=cve.details,
-            known_affected_software_configurations=cve.known_affected_software_configurations,
+            known_affected_software_configurations=(
+                cve.known_affected_software_configurations
+            ),
             impact=cve.impact,
             published_at=cve.published_at,
             modified_at=cve.modified_at,
@@ -83,24 +87,18 @@ def _job_create_update_cve(build: str, cve: CVERecord) -> CVE:
 
 
 def _job_create_local_file(build: str, cve: CVERecord) -> LocalFile:
-    log = BuildLogAdapter(logger, {"build": build})
-
     instance, _ = LocalFile.objects.get_or_create(local_file=cve.local_file)
 
     return instance
 
 
 def _job_create_remote_file(build: str, cve: CVERecord) -> RemoteFile:
-    log = BuildLogAdapter(logger, {"build": build})
-
     instance, _ = RemoteFile.objects.get_or_create(remote_file=cve.remote_file)
 
     return instance
 
 
 def _job_create_snippet(build: str, cve: CVERecord) -> Snippet:
-    log = BuildLogAdapter(logger, {"build": build})
-
     id_hash = hashlib.md5(
         json.dumps(cve.snippet, sort_keys=True).encode("utf-8")
     ).hexdigest()
@@ -113,7 +111,7 @@ def _job_create_snippet(build: str, cve: CVERecord) -> Snippet:
 
 
 @app.task()
-def job_process(build: str, fossid_records: list[dict]) -> None:
+def job_process(build: str, fossid_records: List[Dict[str, Any]]) -> None:
     log = BuildLogAdapter(logger, {"build": build})
 
     _job_start(build)

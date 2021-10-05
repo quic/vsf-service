@@ -8,19 +8,10 @@ import logging
 from json.decoder import JSONDecodeError
 
 from django.core.files.uploadedfile import TemporaryUploadedFile
-from django.db import models
-from django.db.models import fields
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
-from service.models import (
-    CVE,
-    File,
-    Job,
-    LocalFile,
-    RemoteFile,
-    Snippet,
-)
+from service.models import Job
 
 log = logging.getLogger(__name__)
 
@@ -48,9 +39,10 @@ class JobSerializer(serializers.ModelSerializer):
             self.records = json.load(value)
             if not isinstance(self.records, list):
                 self.records = [self.records]
-        except JSONDecodeError as e:
+        except JSONDecodeError:
             log.warning(
-                "Invalid json file format. Transform if the file is a list of json data."
+                "Invalid json file format. Transform if the file is "
+                "a list of json data."
             )
 
             try:
@@ -58,9 +50,10 @@ class JobSerializer(serializers.ModelSerializer):
                 self.records = [
                     json.loads(record) for record in value.readlines()
                 ]
-            except JSONDecodeError as e:
+            except JSONDecodeError:
                 log.error(
-                    "Trasform process failed. The file is not a list of json data."
+                    "Trasform process failed. The file is not a list "
+                    "of json data."
                 )
                 raise serializers.ValidationError(
                     f"{value} is not valid fossid output file."
@@ -98,7 +91,8 @@ class JobSerializer(serializers.ModelSerializer):
                 {
                     "error_message": _(
                         f"Job {job.id} has already been registered with build="
-                        f"{job.build} with current status={job.get_status_display()}"
+                        f"{job.build} with current "
+                        f"status={job.get_status_display()}"
                     )
                 }
             )
