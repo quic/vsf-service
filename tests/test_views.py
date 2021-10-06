@@ -78,3 +78,22 @@ class JobViewSetTestCase(APITestCase):
         )
 
         job_process.assert_not_called()
+
+    @patch("service.views.job_process")
+    def test_post_job_with_existing_build(self, job_process):
+        client = APIClient()
+
+        file = open("tests/data/test_input_data.fossid")
+
+        response = client.post(
+            "/jobs/",
+            data={"build": "fake-image", "file": file},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data["error_message"],
+            ["Job 1 has already been registered with build=fake-image with current status=Created"],
+        )
+
+        job_process.assert_not_called()
