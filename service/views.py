@@ -5,8 +5,7 @@ SPDX-License-Identifier: BSD-3-Clause
 """
 import logging
 
-from rest_framework import mixins, status, viewsets
-from rest_framework.response import Response
+from rest_framework import mixins, viewsets
 
 from service.models import Job
 from service.serializer import JobSerializer

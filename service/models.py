@@ -3,7 +3,6 @@ Copyright (c) 2021, Qualcomm Innovation Center, Inc. All rights reserved.
 
 SPDX-License-Identifier: BSD-3-Clause
 """
-from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -42,7 +41,10 @@ class CVE(models.Model):
     modified_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.__class__.__name__}({self.cve}, ..., {self.published_at}, {self.modified_at})"
+        return (
+            f"{self.__class__.__name__}"
+            f"({self.cve}, ..., {self.published_at}, {self.modified_at})"
+        )
 
     class Meta:
         db_table = "cves"

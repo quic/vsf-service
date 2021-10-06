@@ -27,7 +27,7 @@ class JobViewSetTestCase(APITestCase):
         self.assertIsNotNone(result["created_at"])
         self.assertIsNone(result["started_at"])
         self.assertIsNone(result["ended_at"])
-    
+
     def test_get_jobs_by_id(self):
         client = APIClient()
         response = client.get("/jobs/1/")
@@ -42,7 +42,7 @@ class JobViewSetTestCase(APITestCase):
     def test_post_job(self, job_process):
         client = APIClient()
 
-        file = open("/app/tests/data/test_input_data.fossid")
+        file = open("tests/data/test_input_data.fossid")
 
         response = client.post(
             "/jobs/",
@@ -64,17 +64,17 @@ class JobViewSetTestCase(APITestCase):
     def test_post_job_invalid(self, job_process):
         client = APIClient()
 
-        file = open("/app/tests/data/test_invalid_file.txt")
+        file = open("tests/data/test_invalid_file.txt")
 
         response = client.post(
             "/jobs/",
             data={"build": "fake-image-1", "file": file},
         )
-        
+
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.data["file"], 
-            ["test_invalid_file.txt is not valid fossid output file."]
+            response.data["file"],
+            ["test_invalid_file.txt is not valid fossid output file."],
         )
 
         job_process.assert_not_called()
