@@ -7,6 +7,23 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from service.utils import build_package_information
+
+
+CVE_VALUE = "CVE"
+CVSS_V2_BASE_SCORE = "CVSS V2 Base Score"
+CVSS_V2_SEVERITY = "CVSS V2 Severity"
+CVSS_V3_BASE_SCORE = "CVSS V3 Base Score"
+CVSS_V3_SEVERITY = "CVSS V3 Severity"
+DESCRIPTION = "Description"
+LOCAL_FILE = "Local File"
+MODIFIED_AT = "Modified At"
+PACKAGE_FOUND = "Package Found"
+PUBLISHED_AT = "Published At"
+REMOTE_FILE = "Remote File"
+REMOTE_FILE_ID = "Remote File ID"
+SID = "SID"
+
 
 class LocalFile(models.Model):
     local_file = models.TextField(unique=True)
@@ -64,6 +81,79 @@ class File(models.Model):
                 name="file_fields_all_uniq_key",
             )
         ]
+
+    @property
+    def cvss_v2_base_score(self):
+        return (
+            self.cve.impact.get("baseMetricV2", {})
+            .get("cvssV2", {})
+            .get("baseScore", "")
+        )
+
+    @property
+    def cvss_v2_severity(self):
+        return self.cve.impact.get("baseMetricV2", {}).get("severity")
+
+    @property
+    def cvss_v3_base_score(self):
+        return (
+            self.cve.impact.get("baseMetricV3", {})
+            .get("cvssV3", {})
+            .get("baseScore", "")
+        )
+
+    @property
+    def cvss_v3_severity(self):
+        return (
+            self.cve.impact.get("baseMetricV3", {})
+            .get("cvssV3", {})
+            .get("baseSeverity", "")
+        )
+
+    @property
+    def description(self):
+        try:
+            cve_description = (
+                self.cve.details.get("cve", {})
+                if self.cve.details.get("cve", {})
+                else self.cve.details.get("description", {})
+            )
+            description = cve_description.get("description_data", [])[0].get(
+                "value"
+            )
+        except IndexError:
+            description = None
+
+        return description
+
+    @property
+    def modified_at(self):
+        return self.cve.modified_at
+
+    @property
+    def package_found(self):
+        try:
+            return build_package_information(
+                self.cve.known_affected_software_configurations
+            )
+        except Exception:
+            return None
+
+    @property
+    def published_at(self):
+        return self.cve.published_at
+
+    @property
+    def remote_id(self):
+        return self.remote_file.remote_file.get("id")
+
+    @property
+    def remote_file_path(self):
+        return self.remote_file.remote_file.get("path")
+
+    @property
+    def sid(self):
+        return self.snippet.snippet.get("id")
 
 
 class Job(models.Model):

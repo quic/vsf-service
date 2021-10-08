@@ -11,7 +11,7 @@ from django.core.files.uploadedfile import TemporaryUploadedFile
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
-from service.models import Job
+from service.models import Job, LocalFile, RemoteFile, Snippet, File
 
 log = logging.getLogger(__name__)
 

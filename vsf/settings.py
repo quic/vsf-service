@@ -89,6 +89,13 @@ LOGGING = {
     },
 }
 
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+        "drf_renderer_xlsx.renderers.XLSXRenderer",
+    ),
+}
 
 # Application definition
 
@@ -198,3 +205,6 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+
+# CVE
+CVE_URL = "https://nvd.nist.gov/vuln/detail/"
