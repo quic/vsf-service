@@ -91,7 +91,7 @@ class JobReportViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
                 REMOTE_FILE_ID,
                 LOCAL_FILE,
             ]
-        ]
+        ].copy()
 
         # Excel does not understand datetime with timezone, therefore
         # converting the columns to str
@@ -112,7 +112,9 @@ class JobReportViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         report = BytesIO()
 
         with pd.ExcelWriter(
-            report, engine="xlsxwriter", options={"strings_to_urls": False}
+            report,
+            engine="xlsxwriter",
+            engine_kwargs={"options": {"strings_to_urls": False}},
         ) as writer:
             unique_dataset.to_excel(
                 writer,
@@ -203,7 +205,10 @@ class JobReportViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
         response = HttpResponse(
             report.read(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=(
+                "application/"
+                "vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ),
             status=200,
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -219,9 +224,9 @@ class JobReportViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         Returns:
             Dataframe containing required fields for generating report.
         """
-        dataset = pd.DataFrame()
+        dataset = []
         for item in data:
-            dataset = dataset.append(
+            dataset.append(
                 {
                     CVE_VALUE: item.cve.cve,
                     CVSS_V2_BASE_SCORE: item.cvss_v2_base_score,
@@ -236,10 +241,10 @@ class JobReportViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
                     REMOTE_FILE_ID: item.remote_id,
                     REMOTE_FILE: item.remote_file_path,
                     SID: item.sid,
-                },
-                ignore_index=True,
+                }
             )
-        return dataset
+
+        return pd.DataFrame(dataset)
 
     def _prepare_unique_cves_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
         """

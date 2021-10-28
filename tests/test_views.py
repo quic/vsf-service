@@ -371,7 +371,7 @@ class ReportViewsetTestCase(APITestCase):
     def test_report(self):
         client = APIClient()
 
-        response = client.get("/jobs/1/reports/")
+        response = client.get("/jobs/1/report/")
 
         excel_file_contents = io.BytesIO(response.content)
 
@@ -414,7 +414,7 @@ class ReportViewsetTestCase(APITestCase):
     def test_report_invalid_job_id(self):
         client = APIClient()
 
-        response = client.get("/jobs/2/reports/")
+        response = client.get("/jobs/2/report/")
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.data["detail"], "Not found.")
